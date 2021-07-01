@@ -19,7 +19,7 @@ type Logger struct {
 	*zerolog.Logger
 }
 
-// Configuration for logging
+// Configuration for logging.
 type Config struct {
 	// Enable console logging
 	ConsoleLoggingEnabled bool
@@ -63,7 +63,9 @@ func Configure(config Config) *Logger {
 	default:
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
+
 	consoleWriter := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
+
 	if config.ConsoleLoggingEnabled {
 		consoleWriter.FormatLevel = func(i interface{}) string {
 			return strings.ToUpper(fmt.Sprintf("| %-6s|", i))
@@ -108,8 +110,10 @@ func Configure(config Config) *Logger {
 }
 
 func newRollingFile(config Config) io.Writer {
+
 	if err := os.MkdirAll(config.Directory, 0755); err != nil {
 		log.Error().Err(err).Str("path", config.Directory).Msg("can't create log directory")
+
 		return nil
 	}
 

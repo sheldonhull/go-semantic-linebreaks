@@ -1,16 +1,17 @@
 package main
 
 import (
-	"context"
+
+	// "context"
 	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"os"
-	_ "github.com/sheldonhull/go-semantic-sentences/pkg/logger"
 
 	"github.com/peterbourgon/ff/v3"
-	"github.com/peterbourgon/ff/v3/ffcli"
+
+	"github.com/sheldonhull/go-semantic-sentences/internal/logger"
 )
 
 var debug bool
@@ -18,7 +19,10 @@ var debug bool
 const (
 	// exitFail is the exit code if the program
 	// fails.
-	exitFail = 1
+	exitFail   = 1
+	MaxSize    = 10
+	MaxBackups = 7
+	MaxAge     = 7
 )
 
 // main configuration from Matt Ryer with minimal logic, passing to run, to allow easier CLI tests
@@ -30,11 +34,16 @@ func main() {
 }
 
 func run(args []string, stdout io.Writer) error {
+
 	if len(args) == 0 {
 		return errors.New("no arguments")
 	}
 	flags := flag.NewFlagSet(args[0], flag.ExitOnError)
-	flag.BoolVar(&debug, "debug", false, "sets log level to debug and console pretty output")
+
+	flag.BoolVar(&debug,
+		"debug",
+		false,
+		"sets log level to debug and console pretty output")
 
 	if err := ff.Parse(flags, args); // ff.WithEnvVarNoPrefix(),
 	// ff.WithConfigFileFlag("config"),
@@ -42,11 +51,23 @@ func run(args []string, stdout io.Writer) error {
 	err != nil {
 		return err
 	}
-	// Logger.Configure(Logger.Config{
-	// 	ConsoleLoggingEnabled: true,
-	// })
-	// l.Log.Info().Msg("func run() completed")
-	// Logger.Info().Msg("func run() completed")
+
+	config := Config{
+		ConsoleLoggingEnabled: false,
+		EncodeLogsAsJson:      false,
+		FileLoggingEnabled:    false,
+		Directory:             "",
+		Filename:              "",
+		MaxSize:               MaxSize,
+		MaxBackups:            MaxBackups,
+		MaxAge:                MaxAge,
+		Level:                 "info",
+	}
+	Configure(config)
+
+	// l.Logger.Info().Msg("test")
+	// Logger.Info().Msg("test")
+	// Log.Info().Msg("func run() completed")
 	return nil
 }
 
