@@ -33,15 +33,15 @@ pre-commit:
   parallel: true
   tags: go lint
   commands:
-    gci:
-      tags: fmt
-      run: |
-        gci -w . && gofmt -s -w .
+    # gci:
+    #   tags: fmt
+    #   run: |
+    #     gci -w . && gofmt -s -w .
       #&"$HOME/go/bin/gci" -w .
     # go get github.com/daixiang0/gci
     golangci:
       tags: gotool
-      run: golangci-lint run ./... --config .golangci.yml --enable-all
+      run: golangci-lint run ./... --config .golangci.yml --enable-all --fix
     markdownlint:
       tags: docker
       name: markdownlint-autofix

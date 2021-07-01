@@ -2,7 +2,7 @@ package main
 
 import (
 
-	// "context"
+	// "context".
 	"errors"
 	"flag"
 	"fmt"
@@ -10,9 +10,8 @@ import (
 	"os"
 
 	"github.com/peterbourgon/ff/v3"
+	"github.com/sheldonhull/go-semantic-sentences/internal/logger"
 )
-
-var debug bool
 
 const (
 	// exitFail is the exit code if the program
@@ -23,7 +22,7 @@ const (
 	MaxAge     = 7
 )
 
-// main configuration from Matt Ryer with minimal logic, passing to run, to allow easier CLI tests
+// main configuration from Matt Ryer with minimal logic, passing to run, to allow easier CLI tests.
 func main() {
 	if err := run(os.Args, os.Stdout); err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
@@ -35,12 +34,16 @@ func run(args []string, stdout io.Writer) error {
 	if len(args) == 0 {
 		return errors.New("no arguments")
 	}
+
 	flags := flag.NewFlagSet(args[0], flag.ExitOnError)
 
-	flag.BoolVar(&debug,
-		"debug",
-		false,
-		"sets log level to debug and console pretty output")
+	// var debug bool
+	debug := flag.Bool("debug", false, "sets log level to debug and console pretty output")
+
+	// (&debug,
+	// 	"debug",
+	// 	false,
+	// 	"sets log level to debug and console pretty output")
 
 	if err := ff.Parse(flags, args); // ff.WithEnvVarNoPrefix(),
 	// ff.WithConfigFileFlag("config"),
@@ -49,7 +52,12 @@ func run(args []string, stdout io.Writer) error {
 		return err
 	}
 
-	config := Config{
+	LogLevel := "info"
+	if *debug {
+		LogLevel = "debug"
+	}
+
+	config := logger.Config{
 		ConsoleLoggingEnabled: false,
 		EncodeLogsAsJson:      false,
 		FileLoggingEnabled:    false,
@@ -58,9 +66,9 @@ func run(args []string, stdout io.Writer) error {
 		MaxSize:               MaxSize,
 		MaxBackups:            MaxBackups,
 		MaxAge:                MaxAge,
-		Level:                 "info",
+		Level:                 LogLevel,
 	}
-	Configure(config)
+	logger.Configure(config)
 
 	// l.Logger.Info().Msg("test")
 	// Logger.Info().Msg("test")
