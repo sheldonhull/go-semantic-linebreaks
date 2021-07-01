@@ -10,8 +10,6 @@ import (
 	"os"
 
 	"github.com/peterbourgon/ff/v3"
-
-	"github.com/sheldonhull/go-semantic-sentences/internal/logger"
 )
 
 var debug bool
@@ -34,7 +32,6 @@ func main() {
 }
 
 func run(args []string, stdout io.Writer) error {
-
 	if len(args) == 0 {
 		return errors.New("no arguments")
 	}
