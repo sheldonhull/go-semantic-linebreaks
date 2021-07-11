@@ -8,9 +8,15 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 
 	"github.com/peterbourgon/ff/v3"
-	"github.com/sheldonhull/go-semantic-sentences/internal/logger"
+	// "github.com/rs/zerolog"
+	// "github.com/rs/zerolog/log"
+	// "github.com/rs/zerolog/log"
+	// "github.com/sheldonhull/go-semantic-sentences/internal/logger"
+	//_ "github.com/sheldonhull/go-semantic-sentences/internal/logger"
+	zl "github.com/sheldonhull/go-semantic-sentences/internal/logger"
 )
 
 const (
@@ -57,7 +63,7 @@ func run(args []string, stdout io.Writer) error {
 		LogLevel = "debug"
 	}
 
-	config := logger.Config{
+	config := zl.Config{
 		ConsoleLoggingEnabled: false,
 		EncodeLogsAsJson:      false,
 		FileLoggingEnabled:    false,
@@ -68,8 +74,13 @@ func run(args []string, stdout io.Writer) error {
 		MaxAge:                MaxAge,
 		Level:                 LogLevel,
 	}
-	logger.Configure(config)
 
+	_ = zl.InitLogger(config)
+	zl.Logger.Info().Msg("test")
+	// log.Info().Msg("test")
+
+	// zl.Logger.Info().Msg("test")
+	// zl.Logger.Log().Msg("test2")
 	// l.Logger.Info().Msg("test")
 	// Logger.Info().Msg("test")
 	// Log.Info().Msg("func run() completed")
@@ -86,3 +97,28 @@ func run(args []string, stdout io.Writer) error {
 
 // 	root.ParseAndRun(context.Background(), os.Args[1:])
 // }
+
+// CountViolations counts the number of lines that would need to be fixed by adding semantic line break. It returns an integer value of the violation count found.
+func CountViolations(content []byte) int {
+	// TODO: implement CountViolations()
+	re := regexp.MustCompile(`(?is)^.*\w\.\s\w.*$`)
+	// fmt.Print(string(content))
+	matches := re.FindAllString(string(content), -1)
+	// l.Logger.Info().Msg("test")
+	// ?zerolog.Info().Msg("test2")
+	// log.Debug().Strs("matches", matches).Msg("CountViolations")
+	// logger.Logger.Debug().Strs("matches", matches).Msg("CountViolations")
+	// zl.Logge?r
+
+	// fmt.Println("==== matches =====")
+	// fmt.Printf("%v",matches)
+	// totalMatched := 0
+
+	// for _, m := range matches {
+	// 	totalMatched = totalMatched + 1
+	// 	fmt.Println(m)
+	// }
+
+	// fmt.Print(content)
+	return len(matches)
+}

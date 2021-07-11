@@ -15,6 +15,12 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
+// TODO: remove package level variable for better practice
+// For now I'm using to simplify the small cli tool
+
+// type Logger *zerolog.Logger
+// type Logger *zerolog.Logger
+
 type Logger struct {
 	*zerolog.Logger
 }
@@ -43,7 +49,7 @@ type Config struct {
 	Level string
 }
 
-// Configure sets up the logging framework
+// InitLogger sets up the logging framework
 //
 // In production, the container logs will be collected and file logging should be disabled. However,
 // during development it's nicer to see logs as text and optionally write to a file when debugging
@@ -51,7 +57,7 @@ type Config struct {
 //
 // The output log file will be located at /var/log/service-xyz/service-xyz.log and
 // will be rolled according to configuration set.
-func Configure(config Config) *Logger {
+func InitLogger(config Config) *Logger {
 	var writers []io.Writer
 
 	// Setting as switch so I can expand later to other layers like trace etc if required
@@ -104,8 +110,12 @@ func Configure(config Config) *Logger {
 		Str("level", config.Level).
 		Msg("logging configured")
 
+	// return &logger
+	// return &Logger{
+	// 		Logger: &logger,
+	// 	}
 	return &Logger{
-		Logger: &logger,
+		&logger,
 	}
 }
 
