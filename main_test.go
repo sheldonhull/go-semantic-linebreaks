@@ -12,6 +12,7 @@ func TestCountViolations(t *testing.T) {
 		filepath string
 		want     int
 	}
+
 	testCases := []testCase{
 		{
 			name:     "1 violation",
@@ -29,6 +30,7 @@ func TestCountViolations(t *testing.T) {
 			want:     18,
 		},
 	}
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			f, err := filepath.Abs("test-files/1-violations-multiple-lines.md")
