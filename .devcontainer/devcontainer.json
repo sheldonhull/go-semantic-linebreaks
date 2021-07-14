@@ -35,7 +35,8 @@
 		"liuchao.go-struct-tag",
 		"ethan-reesor.vscode-go-test-adapter",
 		"jinliming2.vscode-go-template",
-		"hbenl.vscode-test-explorer"
+		"hbenl.vscode-test-explorer",
+		"sheldon-hull.extension-pack-go"
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
