@@ -8,26 +8,25 @@ import (
 
 	"github.com/matryer/is"
 	proj "github.com/sheldonhull/go-semantic-sentences"
-	zl "github.com/sheldonhull/go-semantic-sentences/internal/logger"
 )
 
 // Logger contains the package level logger provided from internal logger package that wraps up zerolog.
 // var Log *logger.Logger //nolint: gochecknoglobals.
 //nolint
 func TestMain(m *testing.M) {
-	c := zl.Config{
-		Enable:                false,
-		ConsoleLoggingEnabled: false,
-		EncodeLogsAsJson:      false,
-		FileLoggingEnabled:    false,
-		Directory:             "",
-		Filename:              "",
-		MaxSize:               0,
-		MaxBackups:            0,
-		MaxAge:                0,
-		Level:                 "info",
-	}
-	_ = zl.InitLogger(c)
+	// c := zl.Config{
+	// 	Enable:                false,
+	// 	ConsoleLoggingEnabled: false,
+	// 	EncodeLogsAsJson:      false,
+	// 	FileLoggingEnabled:    false,
+	// 	Directory:             "",
+	// 	Filename:              "",
+	// 	MaxSize:               0,
+	// 	MaxBackups:            0,
+	// 	MaxAge:                0,
+	// 	Level:                 "info",
+	// }
+	// _ = zl.InitLogger(c)
 
 	m.Run()
 	os.Exit(m.Run())

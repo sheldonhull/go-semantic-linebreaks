@@ -83,9 +83,6 @@ func CountViolations(content []byte) int {
 	re := regexp.MustCompile(`(?is)^.*\w\.\s\w.*$`)
 	matches := re.FindAllString(string(content), -1)
 	logger.Log.Info().Int("ViolationCount", len(matches)).Msg("CountViolations")
-	// Log.Logger.Info().Int("ViolationCount", len(matches)).Msg("CountViolations")
-	// Log.Info().Int("ViolationCount", len(matches)).Msg("CountViolations")
-	//	Log.Info().Msg("CountViolations")
 
 	return len(matches)
 }
