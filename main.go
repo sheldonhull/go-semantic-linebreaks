@@ -80,7 +80,8 @@ func run(args []string, stdout io.Writer) error {
 
 // CountViolations counts the number of lines that would need to be fixed by adding semantic line break. It returns an integer value of the violation count found.
 func CountViolations(content []byte) int {
-	re := regexp.MustCompile(`(?is)^.*\w\.\s\w.*$`)
+	// re := regexp.MustCompile(`(?is)^.*\w\.\s\w.*$`)
+	re := regexp.MustCompile(`(?is)(?:.*\w[,.?])\s(?:\w.*)`)
 	matches := re.FindAllString(string(content), -1)
 	logger.Log.Info().Int("ViolationCount", len(matches)).Msg("CountViolations")
 
