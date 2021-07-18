@@ -64,18 +64,17 @@ func TestCountViolations(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			is := is.New(t)
-			f, err := filepath.Abs("test-files/1-violations-multiple-lines.md")
+			f, err := filepath.Abs(tc.filepath)
 			if err != nil {
-				t.Fatal("cannot find test file: [test-files/1-violations-multiple-lines.md]")
+				t.Fatalf("cannot find test file: %q", tc.filepath)
 			}
 			content, err := ioutil.ReadFile(f)
 			if err != nil {
-				t.Fatalf("ioutil.ReadFile(f): %v", err)
+				t.Fatalf("ioutil.ReadFile(f): %q", err)
 			}
-
-			want := 1
 			got := proj.CountViolations(content)
-			is.Equal(want, got) // violation count
+			want := tc.want
+			is.Equal(want, got) // violation count matches expected count
 		})
 	}
 }
@@ -84,26 +83,26 @@ func TestFixViolations(t *testing.T) {
 	t.Parallel()
 
 	type testCase struct {
-		name     string
-		filepath string
-		want     int
+		name          string
+		filepath      string
+		filepathFixed string
 	}
 
 	testCases := []testCase{
 		{
-			name:     "1 violation",
-			filepath: "test-files/1-violations-multiple-lines.md",
-			want:     1,
+			name:          "1 violation",
+			filepath:      "test-files/1-violations-multiple-lines.md",
+			filepathFixed: "test-files/1-violations-multiple-lines-fixed.md",
 		},
 		{
-			name:     "2 violations",
-			filepath: "test-files/2-violations-multiple-lines.md",
-			want:     2,
+			name:          "2 violations",
+			filepath:      "test-files/2-violations-multiple-lines.md",
+			filepathFixed: "test-files/2-violations-multiple-lines-fixed.md",
 		},
 		{
-			name:     "18 violations",
-			filepath: "test-files/18-violations-one-line.md",
-			want:     18,
+			name:          "18 violations",
+			filepath:      "test-files/18-violations-one-line.md",
+			filepathFixed: "test-files/18-violations-one-line-fixed.md",
 		},
 	}
 
@@ -112,18 +111,26 @@ func TestFixViolations(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			is := is.New(t)
-			f, err := filepath.Abs("test-files/1-violations-multiple-lines.md")
+			f, err := filepath.Abs(tc.filepath)
 			if err != nil {
-				t.Fatal("cannot find test file: [test-files/1-violations-multiple-lines.md]")
+				t.Fatalf("cannot find test file: %q", tc.filepath)
 			}
 			content, err := ioutil.ReadFile(f)
 			if err != nil {
 				t.Fatalf("ioutil.ReadFile(f): %v", err)
 			}
+			fixed, err := filepath.Abs(tc.filepathFixed)
+			if err != nil {
+				t.Fatalf("cannot find test file: %q", tc.filepathFixed)
+			}
+			fixedContent, err := ioutil.ReadFile(fixed)
+			if err != nil {
+				t.Fatalf("ioutil.ReadFile(fixed): %v", err)
+			}
 
-			want := 1
-			got := proj.CountViolations(content)
-			is.Equal(want, got) // violation count
+			got := proj.FormatSemanticLineBreak(content)
+			want := fixedContent
+			is.Equal(string(want), string(got)) // FormatSemanticLineBreak matches fixed file
 		})
 	}
 }

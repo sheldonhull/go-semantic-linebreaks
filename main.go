@@ -11,7 +11,7 @@ import (
 	"regexp"
 
 	"github.com/peterbourgon/ff/v3"
-	logger "github.com/sheldonhull/go-semantic-sentences/internal/logger"
+	"github.com/sheldonhull/go-semantic-sentences/internal/logger"
 )
 
 const (
@@ -80,10 +80,18 @@ func run(args []string, stdout io.Writer) error {
 
 // CountViolations counts the number of lines that would need to be fixed by adding semantic line break. It returns an integer value of the violation count found.
 func CountViolations(content []byte) int {
-	// re := regexp.MustCompile(`(?is)^.*\w\.\s\w.*$`)
 	re := regexp.MustCompile(`(?is)(?:.*\w[,.?])\s(?:\w.*)`)
 	matches := re.FindAllString(string(content), -1)
 	logger.Log.Info().Int("ViolationCount", len(matches)).Msg("CountViolations")
 
 	return len(matches)
+}
+
+// FormatSemanticLineBreak takes a byte array and searches for any violations of semantic line breaks and then fixes with line breaks.
+func FormatSemanticLineBreak(content []byte) (formatted []byte) {
+	re := regexp.MustCompile(`(?is)(?:.*\w[,.?])\s(?:\w.*)`)
+	matches := re.ReplaceAllString(string(content), "\n")
+	logger.Log.Info().Int("ViolationCount", len(matches)).Msg("CountViolations")
+
+	return formatted
 }
