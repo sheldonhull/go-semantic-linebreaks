@@ -113,7 +113,7 @@ func TestFixViolations(t *testing.T) {
 			is := is.New(t)
 			f, err := filepath.Abs(tc.filepath)
 			if err != nil {
-				t.Fatalf("cannot find test file: %q", tc.filepath)
+				t.Fatal("cannot find test file: ", tc.filepath)
 			}
 			content, err := ioutil.ReadFile(f)
 			if err != nil {
