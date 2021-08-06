@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"regexp"
 
@@ -42,18 +43,26 @@ func run(args []string, stdout io.Writer) error {
 	flags := flag.NewFlagSet(args[0], flag.ExitOnError)
 
 	debug := flag.Bool("debug", false, "sets log level to debug and console pretty output")
+	source := flag.String("source", "", "source file")
+	write := flag.Bool("write", false, "default to stdout, otherwise replace contents of the file")
 
 	// (&debug,
 	// 	"debug",
 	// 	false,
 	// 	"sets log level to debug and console pretty output")
 
-	if err := ff.Parse(flags, args); // ff.WithEnvVarNoPrefix(),
+	// ff.WithEnvVarNoPrefix(),
+
 	// ff.WithConfigFileFlag("config"),
 	// ff.WithConfigFileParser(fftoml.Parser),
-	err != nil {
+	if err := ff.Parse(flags, args); err != nil {
 		return err
 	}
+
+	logger.Log.Info().
+		Bool("debug", *debug).
+		Str("source", *source).
+		Bool("write", *write).Msg("flags")
 
 	LogLevel := "info"
 	if *debug {
@@ -74,13 +83,23 @@ func run(args []string, stdout io.Writer) error {
 	}
 
 	_ = logger.InitLogger(c)
+	filename := *source
+
+	b, err := ioutil.ReadFile(filename)
+	if err != nil {
+		logger.Log.Error().Err(err).Str("filename", filename).Msg("ReadFile")
+		os.Exit(exitFail)
+	}
+
+	formatted := FormatSemanticLineBreak(b)
+	ioutil.WriteFile(filename, []byte(formatted), os.ModeDevice)
 
 	return nil
 }
 
 // CountViolations counts the number of lines that would need to be fixed by adding semantic line break. It returns an integer value of the violation count found.
 func CountViolations(content []byte) int {
-	re := regexp.MustCompile(`(?is)(?:.*\w[,.?])\s(?:\w.*)`)
+	re := regexp.MustCompile(`(?is)(\w[.?])(\s+)(\w)?`)
 	matches := re.FindAllString(string(content), -1)
 	logger.Log.Info().Int("ViolationCount", len(matches)).Msg("CountViolations")
 
@@ -88,10 +107,10 @@ func CountViolations(content []byte) int {
 }
 
 // FormatSemanticLineBreak takes a byte array and searches for any violations of semantic line breaks and then fixes with line breaks.
-func FormatSemanticLineBreak(content []byte) (formatted []byte) {
-	re := regexp.MustCompile(`(?is)(?:.*\w[,.?])\s(?:\w.*)`)
-	matches := re.ReplaceAllString(string(content), "\n")
-	logger.Log.Info().Int("ViolationCount", len(matches)).Msg("CountViolations")
+func FormatSemanticLineBreak(content []byte) (formatted string) {
+	// re := regexp.MustCompile(`(?is)(?:[a-zA-Z][.?])(\s)(?:[a-zA-Z])`)
+	re := regexp.MustCompile(`(?is)([a-zA-Z"';\]][.?])\s+`)
+	formatted = re.ReplaceAllString(string(content), "$1\n")
 
 	return formatted
 }

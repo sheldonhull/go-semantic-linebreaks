@@ -1,9 +1,11 @@
 package main_test
 
 import (
+	"bytes"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/matryer/is"
@@ -43,19 +45,19 @@ func TestCountViolations(t *testing.T) {
 
 	testCases := []testCase{
 		{
-			name:     "1 violation",
+			name:     "1 violation counted",
 			filepath: "test-files/1-violations-multiple-lines.md",
 			want:     1,
 		},
 		{
-			name:     "2 violations",
+			name:     "2 violations counted",
 			filepath: "test-files/2-violations-multiple-lines.md",
 			want:     2,
 		},
 		{
-			name:     "18 violations",
-			filepath: "test-files/18-violations-one-line.md",
-			want:     18,
+			name:     "11 violations counted",
+			filepath: "test-files/11-violations-one-line.md",
+			want:     11,
 		},
 	}
 
@@ -90,7 +92,7 @@ func TestFixViolations(t *testing.T) {
 
 	testCases := []testCase{
 		{
-			name:          "1 violation",
+			name:          "1 violation fixed",
 			filepath:      "test-files/1-violations-multiple-lines.md",
 			filepathFixed: "test-files/1-violations-multiple-lines-fixed.md",
 		},
@@ -100,9 +102,9 @@ func TestFixViolations(t *testing.T) {
 			filepathFixed: "test-files/2-violations-multiple-lines-fixed.md",
 		},
 		{
-			name:          "18 violations",
-			filepath:      "test-files/18-violations-one-line.md",
-			filepathFixed: "test-files/18-violations-one-line-fixed.md",
+			name:          "11 violations",
+			filepath:      "test-files/11-violations-one-line.md",
+			filepathFixed: "test-files/11-violations-one-line-fixed.md",
 		},
 	}
 
@@ -129,8 +131,67 @@ func TestFixViolations(t *testing.T) {
 			}
 
 			got := proj.FormatSemanticLineBreak(content)
-			want := fixedContent
-			is.Equal(string(want), string(got)) // FormatSemanticLineBreak matches fixed file
+			gotTrimmed := strings.Trim(got, " ")
+			want := strings.Trim(string(fixedContent), " ")
+			is.Equal(string(want), gotTrimmed) // FormatSemanticLineBreak matches fixed file
+		})
+	}
+}
+
+func TestRun(t *testing.T) {
+	type testCase struct {
+		name          string
+		filepath      string
+		filepathFixed string
+	}
+
+	testCases := []testCase{
+		{
+			name:          "1 violation fixed",
+			filepath:      "test-files/1-violations-multiple-lines.md",
+			filepathFixed: "test-files/1-violations-multiple-lines-fixed.md",
+		},
+		{
+			name:          "2 violations",
+			filepath:      "test-files/2-violations-multiple-lines.md",
+			filepathFixed: "test-files/2-violations-multiple-lines-fixed.md",
+		},
+		{
+			name:          "11 violations",
+			filepath:      "test-files/11-violations-one-line.md",
+			filepathFixed: "test-files/11-violations-one-line-fixed.md",
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			is := is.New(t)
+			f, err := filepath.Abs(tc.filepath)
+			if err != nil {
+				t.Fatal("cannot find test file: ", tc.filepath)
+			}
+			content, err := ioutil.ReadFile(f)
+			if err != nil {
+				t.Fatalf("ioutil.ReadFile(f): %v", err)
+			}
+			fixed, err := filepath.Abs(tc.filepathFixed)
+			if err != nil {
+				t.Fatalf("cannot find test file: %q", tc.filepathFixed)
+			}
+			fixedContent, err := ioutil.ReadFile(fixed)
+			if err != nil {
+				t.Fatalf("ioutil.ReadFile(fixed): %v", err)
+			}
+			var stdout bytes.Buffer
+			args := string{"-source", tc.filepath}
+			err := run(args, &stdout)
+
+			got := proj.FormatSemanticLineBreak(content)
+			gotTrimmed := strings.Trim(got, " ")
+			want := strings.Trim(string(fixedContent), " ")
+			is.Equal(string(want), gotTrimmed) // FormatSemanticLineBreak matches fixed file
 		})
 	}
 }

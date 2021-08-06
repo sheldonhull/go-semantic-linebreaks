@@ -16,6 +16,8 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
+const DirectoryPermissions = 0755
+
 type Logger struct {
 	*zerolog.Logger
 }
@@ -132,7 +134,7 @@ func InitLogger(config Config) *Logger {
 }
 
 func newRollingFile(config Config) io.Writer {
-	if err := os.MkdirAll(config.Directory, 0o755); err != nil {
+	if err := os.MkdirAll(config.Directory, DirectoryPermissions); err != nil {
 		log.Error().Err(err).Str("path", config.Directory).Msg("can't create log directory")
 
 		return nil
