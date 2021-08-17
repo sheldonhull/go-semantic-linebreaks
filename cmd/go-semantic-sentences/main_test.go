@@ -185,8 +185,9 @@ func TestRun(t *testing.T) {
 				t.Fatalf("ioutil.ReadFile(fixed): %v", err)
 			}
 			var stdout bytes.Buffer
-			args := string{"-source", tc.filepath}
-			err := run(args, &stdout)
+			args := []string{"-source", tc.filepath}
+			err = proj.Run(args, &stdout)
+			is.NoErr(err) // run should not fail
 
 			got := proj.FormatSemanticLineBreak(content)
 			gotTrimmed := strings.Trim(got, " ")

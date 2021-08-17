@@ -11,7 +11,10 @@ import (
 	"os"
 
 	"github.com/peterbourgon/ff/v3"
+
+	//	"github.com/sheldonhull/go-semantic-sentences/internal/logger"
 	"github.com/sheldonhull/go-semantic-sentences/internal/logger"
+	"github.com/sheldonhull/go-semantic-sentences/pkg/linter"
 )
 
 const (
@@ -58,10 +61,10 @@ func Run(args []string, stdout io.Writer) error {
 		return err
 	}
 
-	logger.Log.Info().
-		Bool("debug", *debug).
-		Str("source", *source).
-		Bool("write", *write).Msg("flags")
+	pterm.
+		pterm.Info.Println("debug", *debug).
+		pterm.Info.Println("source", *source).
+		pterm.Info.Println("write", *write)
 
 	LogLevel := "info"
 	if *debug {
@@ -82,6 +85,26 @@ func Run(args []string, stdout io.Writer) error {
 	}
 
 	_ = logger.InitLogger(c)
+	ApplicationHeader()
+	if files, err := os.ReadDir(*source); err != nil {
+		logger.Log.Error().Err(err).Str("source", *source).Msg("ReadDir")
+		os.Exit(exitFail)
+	}
+	leveledList := pterm.LeveledList{}
+	for _, f := range files {
+leveledList = append(leveledList, pterm.LeveledListItem{Level: 1, Text: f.})
+
+	for _, file := range files {
+		if file.IsDir() {
+			logger.Log.Error().Err(err).Str("source", *source).Msg("Lint")
+			continue
+		}
+		if err := linter.Lint(file.Name()); err != nil {
+			logger.Log.Error().Err(err).Str("source", *source).Msg("Lint")
+			os.Exit(exitFail)
+		}
+	}
+
 	filename := *source
 
 	b, err := ioutil.ReadFile(filename)
@@ -90,8 +113,22 @@ func Run(args []string, stdout io.Writer) error {
 		os.Exit(exitFail)
 	}
 
+	// for _, file := range files{ }
+
+	logger.Log.Info().Int("ViolationCount", len(matches)).Msg("CountViolations")
 	formatted := FormatSemanticLineBreak(b)
 	ioutil.WriteFile(filename, []byte(formatted), os.ModeDevice)
 
 	return nil
+}
+
+// clear console output
+func clear() {
+    print("\033[H\033[2J")
+}
+
+// ApplicationHeader is pterm formatted output to make things look fancy
+func ApplicationHeader() *pterm.TextPrinter {
+    return pterm.DefaultHeader.WithBackgroundStyle(pterm.NewStyle(pterm.BgLightBlue)).WithMargin(10).Println(
+        "Go Semantic Linebreaks")
 }
