@@ -5,10 +5,10 @@ import (
 	// "context".
 	"errors"
 	"flag"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"github.com/pterm/pterm"
 
@@ -17,8 +17,7 @@ import (
 )
 
 const (
-	// exitFail is the exit code if the program
-	// fails.
+	exitOK     = 0
 	exitFail   = 1
 	MaxSize    = 10
 	MaxBackups = 7
@@ -31,9 +30,10 @@ const (
 // main configuration from Matt Ryer with minimal logic, passing to run, to allow easier CLI tests.
 func main() {
 	if err := Run(os.Args, os.Stdout); err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
+		// fmt.Fprintf(os.Stderr, "%s\n", err)
 		os.Exit(exitFail)
 	}
+	os.Exit(exitOK)
 }
 
 func Run(args []string, stdout io.Writer) error {
@@ -44,16 +44,16 @@ func Run(args []string, stdout io.Writer) error {
 	ApplicationHeader()
 	pterm.EnableDebugMessages()
 
-	fs := flag.NewFlagSet("", flag.ExitOnError)
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 	var (
 		debug  = fs.Bool("debug", false, "sets log level to debug and console pretty output")
-		source = fs.String("source", "test.md", "source directory or file")
+		source = fs.String("source", "", "source directory or file")
 		write  = fs.Bool("write", false, "default to stdout, otherwise replace contents of the file")
 	)
 	// ff.Parse(fs, args, ff.WithEnvVarNoPrefix())
 	if err := fs.Parse(args); err != nil {
-		pterm.Error.Println("ff.Parse: %v", err)
+		pterm.Error.Printf("ff.Parse: %v\n", err)
 
 		return err
 	}
@@ -62,48 +62,68 @@ func Run(args []string, stdout io.Writer) error {
 		pterm.EnableDebugMessages()
 		pterm.Error.ShowLineNumber = true
 	}
-
+	pterm.Debug.Println("")
 	pterm.Debug.Printf("source: %10v\n", *source)
 	pterm.Debug.Printf("write: %10v\n", *write)
 	pterm.Debug.Printf("debug: %10v\n", *debug)
 
-	// files := []os.FileInfo{}
+	fullpath, err := filepath.Abs(*source)
+	if err != nil {
+		pterm.Error.Printf("filepath.Abs(%s): %v\n", *source, err)
+		return err
+	}
 
-	// if os.FileInfo.IsDir(*source) {
-	// 	files, err := os.ReadDir(*source)
+	fileInfo, err := os.Stat(fullpath)
+	if err != nil {
+		pterm.Error.Printf("os.Stat(%s): %v\n", fullpath, err)
+		return err
+	}
+	var files []string
+
+	if fileInfo.Mode().IsDir() {
+
+		d, err := os.ReadDir(fullpath)
+		for _, f := range d {
+			files = append(files, f.Name())
+		}
+		if err != nil {
+			pterm.Error.Printf("os.ReadDir(%s): [%v]\n", fullpath, err)
+			return err
+		}
+	}
+	if fileInfo.Mode().IsRegular() {
+		files = append(files, fullpath)
+	}
 	// 	if err != nil {
-	// 		pterm.Error.Println("ReadDir: %v", err)
-	// 		os.Exit(exitFail)
-	// 	}
-	// } else {
-	// 	files := os.ReadFile(*source)
-	// }
 
-	// if err != nil {
-	// 	pterm.Error.Printf("ReadDir: %v\n", err)
-	// 	os.Exit(exitFail)
+	// 	pterm.Error.Printf("ReadDir [%s]: %v\n", *source, err)
+	// 	return err
 	// }
-
 	// leveledList := pterm.LeveledList{}
-	files := *source
+	pterm.Info.Printf("%s: %d files\n", fullpath, len(files))
 	for _, f := range files {
 		// leveledList = append(leveledList, pterm.LeveledListItem{Level: 1, Text: f.})
+		// if f.IsDir() {
+		// 	pterm.Info.Println("🔁 skipping since directory object", f.Name())
 
-		if os.FileInfo.IsDir(f) {
-			pterm.Info.Println("🔁 skipping since directory object", f.Name())
-
-			continue
-		}
-
-		b, err := ioutil.ReadFile(f.Name())
+		// 	continue
+		// }
+		b, err := ioutil.ReadFile(f)
 		if err != nil {
-			pterm.Error.Printf("ReadFile: [%v]\n", err)
-			os.Exit(exitFail)
+			pterm.Error.Printf("ioutil.ReadFile(%s): [%v]\n", f, err)
+			return err
 		}
 
 		// for _, file := range files{ }
+		count := linter.CountViolations(b)
+
 		formatted := linter.FormatSemanticLineBreak(b)
-		ioutil.WriteFile(f.Name(), []byte(formatted), os.ModeDevice)
+		err = ioutil.WriteFile(f, []byte(formatted), os.ModeDevice)
+		if err != nil {
+			pterm.Error.Printf("ioutil.WriteFile(%s): [%v]\n", f, err)
+			return err
+		}
+		pterm.Success.Printf("✔️ %s [violation count: %d]\n", f, count)
 	}
 	return nil
 }
