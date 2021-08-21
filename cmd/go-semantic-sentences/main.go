@@ -10,10 +10,9 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/peterbourgon/ff/v3"
+	"github.com/pterm/pterm"
 
 	//	"github.com/sheldonhull/go-semantic-sentences/internal/logger"
-	"github.com/sheldonhull/go-semantic-sentences/internal/logger"
 	"github.com/sheldonhull/go-semantic-sentences/pkg/linter"
 )
 
@@ -42,93 +41,80 @@ func Run(args []string, stdout io.Writer) error {
 		return errors.New("no arguments")
 	}
 
-	flags := flag.NewFlagSet(args[0], flag.ExitOnError)
+	ApplicationHeader()
+	pterm.EnableDebugMessages()
 
-	debug := flag.Bool("debug", false, "sets log level to debug and console pretty output")
-	source := flag.String("source", "", "source file")
-	write := flag.Bool("write", false, "default to stdout, otherwise replace contents of the file")
+	fs := flag.NewFlagSet("", flag.ExitOnError)
 
-	// (&debug,
-	// 	"debug",
-	// 	false,
-	// 	"sets log level to debug and console pretty output")
+	var (
+		debug  = fs.Bool("debug", false, "sets log level to debug and console pretty output")
+		source = fs.String("source", "test.md", "source directory or file")
+		write  = fs.Bool("write", false, "default to stdout, otherwise replace contents of the file")
+	)
+	// ff.Parse(fs, args, ff.WithEnvVarNoPrefix())
+	if err := fs.Parse(args); err != nil {
+		pterm.Error.Println("ff.Parse: %v", err)
 
-	// ff.WithEnvVarNoPrefix(),
-
-	// ff.WithConfigFileFlag("config"),
-	// ff.WithConfigFileParser(fftoml.Parser),
-	if err := ff.Parse(flags, args); err != nil {
 		return err
 	}
 
-	pterm.
-		pterm.Info.Println("debug", *debug).
-		pterm.Info.Println("source", *source).
-		pterm.Info.Println("write", *write)
-
-	LogLevel := "info"
 	if *debug {
-		LogLevel = "debug"
+		pterm.EnableDebugMessages()
+		pterm.Error.ShowLineNumber = true
 	}
 
-	c := logger.Config{
-		Enable:                true,
-		ConsoleLoggingEnabled: true,
-		EncodeLogsAsJson:      false,
-		FileLoggingEnabled:    false,
-		Directory:             "",
-		Filename:              "",
-		MaxSize:               MaxSize,
-		MaxBackups:            MaxBackups,
-		MaxAge:                MaxAge,
-		Level:                 LogLevel,
-	}
+	pterm.Debug.Printf("source: %10v\n", *source)
+	pterm.Debug.Printf("write: %10v\n", *write)
+	pterm.Debug.Printf("debug: %10v\n", *debug)
 
-	_ = logger.InitLogger(c)
-	ApplicationHeader()
-	if files, err := os.ReadDir(*source); err != nil {
-		logger.Log.Error().Err(err).Str("source", *source).Msg("ReadDir")
-		os.Exit(exitFail)
-	}
-	leveledList := pterm.LeveledList{}
+	// files := []os.FileInfo{}
+
+	// if os.FileInfo.IsDir(*source) {
+	// 	files, err := os.ReadDir(*source)
+	// 	if err != nil {
+	// 		pterm.Error.Println("ReadDir: %v", err)
+	// 		os.Exit(exitFail)
+	// 	}
+	// } else {
+	// 	files := os.ReadFile(*source)
+	// }
+
+	// if err != nil {
+	// 	pterm.Error.Printf("ReadDir: %v\n", err)
+	// 	os.Exit(exitFail)
+	// }
+
+	// leveledList := pterm.LeveledList{}
+	files := *source
 	for _, f := range files {
-leveledList = append(leveledList, pterm.LeveledListItem{Level: 1, Text: f.})
+		// leveledList = append(leveledList, pterm.LeveledListItem{Level: 1, Text: f.})
 
-	for _, file := range files {
-		if file.IsDir() {
-			logger.Log.Error().Err(err).Str("source", *source).Msg("Lint")
+		if os.FileInfo.IsDir(f) {
+			pterm.Info.Println("🔁 skipping since directory object", f.Name())
+
 			continue
 		}
-		if err := linter.Lint(file.Name()); err != nil {
-			logger.Log.Error().Err(err).Str("source", *source).Msg("Lint")
+
+		b, err := ioutil.ReadFile(f.Name())
+		if err != nil {
+			pterm.Error.Printf("ReadFile: [%v]\n", err)
 			os.Exit(exitFail)
 		}
+
+		// for _, file := range files{ }
+		formatted := linter.FormatSemanticLineBreak(b)
+		ioutil.WriteFile(f.Name(), []byte(formatted), os.ModeDevice)
 	}
-
-	filename := *source
-
-	b, err := ioutil.ReadFile(filename)
-	if err != nil {
-		logger.Log.Error().Err(err).Str("filename", filename).Msg("ReadFile")
-		os.Exit(exitFail)
-	}
-
-	// for _, file := range files{ }
-
-	logger.Log.Info().Int("ViolationCount", len(matches)).Msg("CountViolations")
-	formatted := FormatSemanticLineBreak(b)
-	ioutil.WriteFile(filename, []byte(formatted), os.ModeDevice)
-
 	return nil
 }
 
 // clear console output
-func clear() {
-    print("\033[H\033[2J")
-}
+// func clear() {
+//     fmt.Fprintf(os.Stdout, "\033[H\033[2J")
+// }
 
-// ApplicationHeader is pterm formatted output to make things look fancy
+// ApplicationHeader is pterm formatted output to make things look fancy.
 func ApplicationHeader() *pterm.TextPrinter {
-    return pterm.DefaultHeader.WithBackgroundStyle(pterm.NewStyle(pterm.BgLightBlue)).WithMargin(10).Println(
-        "Go Semantic Linebreaks")
+	return pterm.DefaultHeader.WithBackgroundStyle(pterm.NewStyle(pterm.BgLightBlue)).WithMargin(10).Println(
+		"Go Semantic Linebreaks")
 }
