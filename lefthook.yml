@@ -33,9 +33,15 @@ pre-commit:
   parallel: true
   tags: go lint
   commands:
+    # gci:
+    #   tags: fmt
+    #   run: |
+    #     gci -w . && gofmt -s -w .
+      #&"$HOME/go/bin/gci" -w .
+    # go get github.com/daixiang0/gci
     golangci:
       tags: gotool
-      run: golangci-lint run ./... --config .golangci.yml --enable-all
+      run: golangci-lint run ./... --config .golangci.yml --enable-all --fix
     markdownlint:
       tags: docker
       name: markdownlint-autofix
@@ -47,14 +53,14 @@ pre-commit:
       files: git ls-files -m
       glob: "*.sh"
       run: docker run --rm -v ${PWD}:/mnt koalaman/shellcheck:stable --format=json {files}
-    # gofumpt:
-    #   tags: gotool
-    #   name: gofumpt
-    #   run: gofumpt -l -w .
-    # goimports:
-    #   tags: gotool
-    #   name: goimports
-    #   run: goimports -w .
+    gofumpt:
+      tags: gotool
+      name: gofumpt
+      run: gofumpt -l -w .
+    goimports:
+      tags: gotool
+      name: goimports
+      run: goimports -w .
     # govet:
     #   tags: backend style
     #   files: git ls-files -m

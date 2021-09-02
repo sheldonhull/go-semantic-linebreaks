@@ -1,0 +1,115 @@
+package main
+
+import (
+
+	// "context".
+	"errors"
+	"flag"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"os"
+
+	"github.com/peterbourgon/ff/v3"
+	"github.com/sheldonhull/go-semantic-sentences/internal/logger"
+	"github.com/sheldonhull/go-semantic-sentences/pkg/linter"
+)
+
+const (
+	// exitFail is the exit code if the program
+	// fails.
+	exitFail   = 1
+	MaxSize    = 10
+	MaxBackups = 7
+	MaxAge     = 7
+)
+
+// Logger contains the package level logger provided from internal logger package that wraps up zerolog.
+// var log *zl.Logger //nolint: gochecknoglobals
+
+// main configuration from Matt Ryer with minimal logic, passing to run, to allow easier CLI tests.
+func main() {
+	if err := Run(os.Args, os.Stdout); err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		os.Exit(exitFail)
+	}
+}
+
+func Run(args []string, stdout io.Writer) error {
+	if len(args) == 0 {
+		return errors.New("no arguments")
+	}
+
+	fs := flag.NewFlagSet("", flag.ExitOnError)
+
+	debug := fs.Bool("debug", false, "sets log level to debug and console pretty output")
+	source := fs.String("source", "", "source file")
+	write := fs.Bool("write", false, "default to stdout, otherwise replace contents of the file")
+
+	// (&debug,
+	// 	"debug",
+	// 	false,
+	// 	"sets log level to debug and console pretty output")
+
+	// ff.WithEnvVarNoPrefix(),
+
+	// ff.WithConfigFileFlag("config"),
+	// ff.WithConfigFileParser(fftoml.Parser),
+	if err := ff.Parse(fs, args); err != nil {
+		return err
+	}
+
+	LogLevel := "info"
+	if *debug {
+		LogLevel = "debug"
+	}
+
+	c := logger.Config{
+		Enable:                true,
+		ConsoleLoggingEnabled: true,
+		EncodeLogsAsJson:      false,
+		FileLoggingEnabled:    false,
+		Directory:             "",
+		Filename:              "",
+		MaxSize:               MaxSize,
+		MaxBackups:            MaxBackups,
+		MaxAge:                MaxAge,
+		Level:                 LogLevel,
+	}
+
+	zl := logger.InitLogger(c)
+	zl.Info().Msg("logger initialized")
+
+	zl.Info().
+		Bool("debug", *debug).
+		Str("source", *source).
+		Bool("write", *write).Msg("parsed flags")
+	filename := *source
+
+	if _, err := os.Stat(filename); err != nil {
+		zl.Error().Err(err).
+			Str("filename", filename).
+			Msg("os.Stat(filename)")
+	}
+
+	b, err := ioutil.ReadFile(filename)
+	if err != nil {
+		zl.Error().Err(err).
+			Str("filename", filename).
+			Msg("ReadFile")
+		os.Exit(exitFail)
+	}
+	zl.Debug().Str("filename", filename).Msg("ReadFile")
+	formatted := linter.FormatSemanticLineBreak(b)
+
+	zl.Debug().Str("formatted", formatted).Msg("linter.FormatSemanticLineBreak(b)")
+	if err := ioutil.WriteFile(filename, []byte(formatted), os.ModeDevice); err != nil {
+		zl.Error().Err(err).
+			Str("filename", filename).
+			Msg("WriteFile")
+		os.Exit(exitFail)
+	}
+	zl.Debug().Msg("linter.FormatSemanticLineBreak(b)")
+
+	return nil
+}
