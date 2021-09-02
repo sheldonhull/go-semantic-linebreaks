@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/matryer/is"
-	proj "github.com/sheldonhull/go-semantic-sentences/pkg/linter"
+	proj "github.com/sheldonhull/go-semantic-linebreaks/pkg/linter"
 )
 
 // // Logger contains the package level logger provided from internal logger package that wraps up zerolog.

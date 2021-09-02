@@ -12,8 +12,8 @@ import (
 
 	"github.com/pterm/pterm"
 
-	//	"github.com/sheldonhull/go-semantic-sentences/internal/logger"
-	"github.com/sheldonhull/go-semantic-sentences/pkg/linter"
+	//	"github.com/sheldonhull/go-semantic-linebreaks/internal/logger"
+	"github.com/sheldonhull/go-semantic-linebreaks/pkg/linter"
 )
 
 const (

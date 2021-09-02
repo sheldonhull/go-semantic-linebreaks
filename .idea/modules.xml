@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/go-semantic-sentences.iml" filepath="$PROJECT_DIR$/.idea/go-semantic-sentences.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/go-semantic-linebreaks.iml" filepath="$PROJECT_DIR$/.idea/go-semantic-linebreaks.iml" />
     </modules>
   </component>
 </project>

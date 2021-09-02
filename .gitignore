@@ -54,3 +54,5 @@ Temporary Items
 
 **/*/bin
 bin/chezmoi
+artifacts
+.vendor

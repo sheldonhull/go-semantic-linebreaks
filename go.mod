@@ -1,4 +1,4 @@
-module github.com/sheldonhull/go-semantic-sentences
+module github.com/sheldonhull/go-semantic-linebreaks
 
 go 1.16
 
@@ -8,7 +8,7 @@ require (
 	github.com/pterm/pterm v0.12.30
 	github.com/rs/zerolog v1.23.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
-// github.com/sheldonhull/go-semantic-sentences/internal/logger v0.0.0
+// github.com/sheldonhull/go-semantic-linebreaks/internal/logger v0.0.0
 )
 
-// replace github.com/sheldonhull/go-semantic-sentences/internal/logger v0.0.0 => ./internal/logger
+// replace github.com/sheldonhull/go-semantic-linebreaks/internal/logger v0.0.0 => ./internal/logger
