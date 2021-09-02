@@ -91,7 +91,7 @@ func Run(args []string, stdout io.Writer) error {
 			return err
 		}
 	}
-	if fileInfo.Mode().IsRegular() {
+	if !fileInfo.IsDir() { // fileInfo.Mode().IsRegular() &&
 		files = append(files, fullpath)
 	}
 	// 	if err != nil {
