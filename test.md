@@ -16,8 +16,7 @@ toc:
 ---
 
 {{< admonition type="info" title="Any requests?" >}}
-If you have any requests or improvements for this content, please comment below.
-It will open a GitHub issue for chatting further.
+If you have any requests or improvements for this content, please comment below. It will open a GitHub issue for chatting further.
 I'd be glad to improve with any additional quick help and in general like to know if anything here in particular was helpful to someone.
 Cheers!
 👍
@@ -34,6 +33,7 @@ Linux has it's own set of directions.
 - `Install-Module PSFramework` // I use this module for better logging and overall improvements in my quality of life.
 It's high quality, used by big projects like DbaTools and developed by a Powershell MVP with lots of testing.
 Forget regular `Write-Verbose` commands and just use the `Write-PSFMessage -Level Verbose -Message 'TacoBear'` instead.
+
 ### PSFramework
 
 I use [PSFramework](http://bit.ly/2LHNpkE) on all my instances, as it's fantastic expansion to some core areas with PowerShell.
@@ -51,6 +51,7 @@ A few key elements it can help with are:
 1. Install VSCode (Users)
 2. `choco upgrade vscode-powershell -y` or install in extension panel in VSCode.
 If you are using ISE primarily.... move on already.
+
 ## String Formatting
 
 | Type               | Example                                                | Output                      | Notes                                                               |
@@ -72,6 +73,7 @@ Converting dates to Unix Epoc time can be challenging without using the correct 
 There is some built in functionality for converting dates such as `(Get-Date).ToUniversalTime() -UFormat '%s'` but this can have problems with time zone offsets.
 A more consistent approach would be to leverage the following.
 This was very helpful to me in working with Grafana and InfluxDb which commonly leverage Unix Epoc time format with seconds or milliseconds precision.
+
 ```powershell
 $CurrentTime = [DateTimeOffset]::new([datetime]::now,[DateTimeOffset]::Now.Offset);
 
@@ -93,6 +95,7 @@ Look at [SecretsManagement](https://github.com/PowerShell/SecretManagement).
 
 SecureString should be considered deprecated.
 It provides a false illusion of security mostly, and it's better to approach with other methods.
+
 - [Obsolete the SecureString Type Discussion](https://github.com/dotnet/runtime/issues/30612#issuecomment-523534346)
 - [DE0001](https://github.com/dotnet/platform-compat/blob/master/docs/DE0001.md)
 
@@ -122,6 +125,7 @@ The SecretsManagement powershell module supports a variety of backends such as 1
 ### Using Basic Authorization With REST
 
 When leveraging some api methods you need to encode the header with basic authentication to allow authenticated requests.
+
 ```powershell
 #seems to work for both version 5.1 and 6.1
 param(
@@ -141,6 +145,7 @@ $results
 
 Prefer to use modules, but for quick adhoc work, you can organize your work in a folder and use a subfolder called functions.
 I find this better than trying to create one large script file with multiple functions in it.
+
 ```powershell
 $FunctionsFolder = Join-Path $toolsDir 'functions'
 Get-ChildItem -Path $FunctionsFolder -Filter *.ps1 | ForEach-Object {
@@ -175,6 +180,7 @@ Trying to expand gets you the state, but now you don't have the original object 
 | 16   | running |
 
 PSFramework makes this easy to work with by simply referencing the object properties for parsing in the `Select-PSFObject` statement.
+
 ```powershell
 (Get-EC2Instance -Filter $ec2Filter).Instances | Select-PSFObject InstanceId, 'State.Code as StateCode', 'State.Name as StateName'
 ```
@@ -215,6 +221,7 @@ Get-AWSCredentials -ListProfileDetail  |  Select-PSFObject -Property ProfileName
 
 Another good example might be the desire to parse out the final key section from S3, to determine what the file name would actually be for easier filtering or searching.
 In this case, a simple script property could parse out the name, and then return the last item in the array using Powershell's shortcut of `$array[-1]` to get the last item.
+
 ```powershell
 Get-S3Object -BucketName 'tacoland' | Select-PSFObject -ScriptProperty @{
     BaseName = @{
@@ -229,6 +236,7 @@ Get-S3Object -BucketName 'tacoland' | Select-PSFObject -ScriptProperty @{
 
 If you are using `-Parallel` with the newer runspaces feature in PowerShell 7 or greater, then long running operations such as queries or operations that take a while might be difficult to track progress on.
 In my case, I wanted to be able to see the progress for build process running in parallel and found using the synchronized hashtable I was able to do this.
+
 ```powershell
 $hash = [hashtable]::Synchronized(@{})
 $hash.counter = 1
@@ -253,6 +261,7 @@ Progress: 5
 ```
 
 A more advanced way to use this might be to help guage how long something might take to complete when running parallel SQL Server queries.
+
 ```powershell
 #################################################################
 # Quick Estimate of Pipeline Completion with Parallel Runspaces #
@@ -295,6 +304,7 @@ This means that the behavior of break, continue, and return all operate differen
 
 These are ranked in the order I recommend using by default.
 Setup the results to test with.
+
 ```powershell
 $Items = Get-ChildItem
 ```
@@ -315,6 +325,7 @@ $Items | ForEach-Object { $_.Name.ToString().ToLower() }
 - Seriously, I've seen it called that.
 - It's only in version >= 4 [Magic Operators](https://bit.ly/3l1i3Vn).
 - Loads all results into memory before running, so can be great performance boost for certain scenarios that a `ForEach-Object` would be slower at.
+
 ### ForEach Magic Operator
 
 ```powershell
@@ -324,6 +335,7 @@ $Items.ForEach{ $_.Name.ToString().ToLower() }
 - This is the standard `foreach` loop.
 - It is the easiest to use and understand for someone new to PowerShell, but highly recommend that it is used in exceptions and try to stick with `ForEach-Object` as your default for idiomatic PowerShell if you are learning.
 - Standard break, continue, return behavior is a bit easier to understand.
+
 ### foreach loop
 
 ```powershell
@@ -407,6 +419,7 @@ $cred = Get-STSSessionToken -DurationInSeconds ([timespan]::FromHours(8).TotalSe
 
 You can copy that string into your remote session to get the access tokens recognized by the s5cmd tool and allow you to grab files from another AWS account S3 bucket.
 > NOTE: To sync a full "directory" in s3, you need to leave the asteriks at the end of the key as demonstrated.
+
 ### Windows
 
 #### Install S5Cmd For Windows
@@ -450,6 +463,7 @@ Read-Host 'Enter to continue if this makes sense, or cancel (ctrl+c)'
 Going forward, use AWS.Tools modules for newer development.
 It's much faster to import and definitely a better development experience in alignment with .NET SDK namespace approach.
 Use their installer module to simplify versioning and avoid conflicts with automatic cleanup of prior SDK versions.
+
 ```powershell
 install-module 'AWS.Tools.Installer' -Scope CurrentUser
 
@@ -480,6 +494,7 @@ $script:SqlCredential = [pscredential]::new($script:SqlLoginName, $script:SqlPas
 
 Note that this can vary in how you read it based on the format.
 The normal format for entries like databases seems to be: `{"username":"password"}` or similar.
+
 ```powershell
 $Secret = Get-SECSecretValue -SecretId 'service-accounts/my-secret-id' -ProfileName $ProfileName
 ```
@@ -487,6 +502,7 @@ $Secret = Get-SECSecretValue -SecretId 'service-accounts/my-secret-id' -ProfileN
 ### Generate a Temporary Key
 
 Useful for needing to generate some time sensitive access credentials when connected via SSM Session and needing to access another account's resources.
+
 ```powershell
 Import-Module aws.tools.common, aws.tools.SecurityToken
 Set-AWSCredential -ProfileName 'ProfileName' -scope Global
@@ -501,6 +517,7 @@ $cred = Get-STSSessionToken -DurationInSeconds ([timespan]::FromHours(8).TotalSe
 ### Install SSM Agent Manually
 
 This is based on the AWS install commands, but with a few enhancements to better work on older Windows servers.
+
 ```powershell
 # https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-install-win.html
 $ProgressPreference = 'SilentlyContinue'
@@ -533,6 +550,7 @@ Restart-Service AmazonSSMAgent
 
 Many changes occurred after version 5.
 This provides a few examples on how to leverage Pester for data driven tests with this new format.
+
 ### BeforeAll And BeforeDiscovery
 
 One big change was the two scopes.
@@ -544,6 +562,7 @@ While older versions of Pester would allow a lot more `foreach` type loops, this
 ### Pester Container To Help Setup Data Driven Tests
 
 Example of setting up inputs for the test script from your InvokeBuild job.
+
 ```powershell
 $pc = New-PesterContainer -Path (Join-Path $BuildRoot 'tests\configuration.tests.ps1') -Data @{
     credential_user1 = Get-PSFConfigValue "Project.$ENV:GROUP.credential.user1" -NotNull
@@ -595,6 +614,7 @@ Run this with: `Invoke-Pester -Configuration $Configuration`
 
 To improve the output, I took a page from `PSFramework` and used the summary counts here, which could be linked to a chatops message.
 Otherwise the diagnostic output should be fine.
+
 ```powershell
 $testresults = @()
 $testresults +=  Invoke-Pester -Configuration $Configuration
@@ -630,6 +650,7 @@ if ($totalFailed -gt 0)
 ### Use Test Artifact
 
 Use the artifact generated in the Azure Pipelines yaml to publish pipeline test results.
+
 ```yaml
 ## Using Invoke Build for running
 
@@ -658,6 +679,7 @@ Use the artifact generated in the Azure Pipelines yaml to publish pipeline test 
 ### Dynamic Link to a Pipeline Run
 
 Create a link to a pipeline for your chatops.
+
 ```powershell
 $button = "${ENV:SYSTEM_TEAMFOUNDATIONCOLLECTIONURI}${ENV:SYSTEM_TEAMPROJECT}/_build/results?buildId=$($ENV:BUILD_BUILDID)&view=logs"
 ```
@@ -677,6 +699,7 @@ Needs more refinement and probably should just be an invoke build function, but 
 
 Setup up your variables like demonstrated.
 This doesn't handle nested task creation, so parentid won't be useful for anything other than local progress bar nesting.
+
 ```powershell
 $ProgressId =  [int]$RANDOM.Next(1, 1000)
 $ProgressCounter = 0
@@ -702,6 +725,7 @@ foreach ($i in $List.Items)
 
 Include this function in InvokeBuild job.
 If not using InvokeBuild, you'll need to change `Write-Build` to `Write-Host` and remove the color attribute.
+
 ```powershell
 function Write-BuildProgressInfo
 {
