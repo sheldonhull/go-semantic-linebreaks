@@ -6,7 +6,7 @@ require (
 	github.com/matryer/is v1.4.0
 	github.com/peterbourgon/ff v1.7.0
 	github.com/pterm/pterm v0.12.30
-	github.com/rs/zerolog v1.23.0
+	github.com/rs/zerolog v1.25.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 // github.com/sheldonhull/go-semantic-linebreaks/internal/logger v0.0.0
 )
