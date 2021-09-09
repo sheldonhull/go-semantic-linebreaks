@@ -12,7 +12,7 @@ import (
 func TestMain(t *testing.T) {
 	is := iz.New(t)
 	pterm.DisableStyling()
-	args := []string{"-source", "C:\\Users\\sheld\\git\\go-semantic-linebreaks\\test.md"}
+	args := []string{"-source", "test.md"}
 	var stdout bytes.Buffer
 	err := proj.Run(args, &stdout)
 	is.NoErr(err) // run should not fail
