@@ -29,7 +29,7 @@ const (
 )
 
 // Logger contains the package level logger provided from internal logger package that wraps up zerolog.
-// var log *logger.Logger //nolint: gochecknoglobals
+// Var log *logger.Logger //nolint: gochecknoglobals
 // main configuration from Matt Ryer with minimal logic, passing to run, to allow easier CLI tests.
 func main() {
 	if err := Run(os.Args, os.Stdout); err != nil {

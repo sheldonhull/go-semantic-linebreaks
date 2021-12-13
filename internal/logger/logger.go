@@ -16,21 +16,21 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-const DirectoryPermissions = 0755
+const DirectoryPermissions = 0o755
 
 type Logger struct {
 	*zerolog.Logger
 }
 
-var Log *Logger //nolint: gochecknoglobals
+var Log *Logger //nolint: gochecknoglobals // gochecknoglobals: logger, ignoring globals for now; sheldon
 // Configuration for logging.
 type Config struct {
 	// Set Enable to false to disable logging
 	Enable bool
 	// Enable console logging
 	ConsoleLoggingEnabled bool
-	// EncodeLogsAsJson makes the log framework log JSON
-	EncodeLogsAsJson bool
+	// EncodeLogsAsJSON makes the log framework log JSON
+	EncodeLogsAsJSON bool
 	// FileLoggingEnabled makes the framework log to a file
 	// the fields below can be skipped if this value is false!
 	FileLoggingEnabled bool
@@ -49,16 +49,17 @@ type Config struct {
 }
 
 // init logger with disabled state on import to avoid any nil pointers if unused.
-func init() { //nolint:gochecknoinits
+// Trunk-ignore(golangci-lint/gochecknoinits).
+func init() { //nolint:noinit // noinit: to avoid nil logging
 	Log = InitLogger(Config{
 		Enable:                false,
 		ConsoleLoggingEnabled: false,
-		EncodeLogsAsJson:      false,
+		EncodeLogsAsJSON:      false,
 		FileLoggingEnabled:    false,
 		Directory:             "",
 		Filename:              "",
-		MaxSize:               10, //nolint: gomnd
-		MaxBackups:            10, //nolint: gomnd
+		MaxSize:               10, //nolint:gomnd //  gomnd: defaults to simplify testing with nil output logger
+		MaxBackups:            10, //nolint:gomnd //  gomnd: defaults to simplify testing with nil output logger
 		MaxAge:                1,
 		Level:                 "info",
 	})
@@ -121,7 +122,7 @@ func InitLogger(config Config) *Logger {
 
 	logger.Info().
 		Bool("fileLogging", config.FileLoggingEnabled).
-		Bool("jsonLogOutput", config.EncodeLogsAsJson).
+		Bool("jsonLogOutput", config.EncodeLogsAsJSON).
 		Str("logDirectory", config.Directory).
 		Str("fileName", config.Filename).
 		Int("maxSizeMB", config.MaxSize).

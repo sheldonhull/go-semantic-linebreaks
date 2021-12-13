@@ -7,6 +7,7 @@ require (
 	github.com/peterbourgon/ff v1.7.1
 	github.com/pterm/pterm v0.12.30
 	github.com/rs/zerolog v1.25.0
+	github.com/yuin/goldmark v1.4.4 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 // github.com/sheldonhull/go-semantic-linebreaks/internal/logger v0.0.0
 )
