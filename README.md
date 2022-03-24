@@ -22,3 +22,11 @@ go install https://github.com/sheldonhull/go-semantic-linebreaks/cmd/go-semantic
 ```shell
 go-semantic-linebreaks -source ./markdowndirectory
 ```
+
+## Remotely Invoke
+
+```shell
+go run github.com/sheldonhull/go-semantic-linebreaks/cmd/go-semantic-linebreaks@latest -source $markdownfile -write
+```
+
+Make sure to compare the before, and after, as this project is just regex based right now (eventually I want to use goldmark for parsing block objects, but haven't made time yet).
