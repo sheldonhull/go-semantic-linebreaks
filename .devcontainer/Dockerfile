@@ -1,21 +1,25 @@
-# See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.177.0/containers/go/.devcontainer/base.Dockerfile
+FROM mcr.microsoft.com/devcontainers/base:ubuntu
+# BUILD ARGS FROM DEVCONTAINER JSON
+ARG DEVCONTAINER_USER
+ARG GOPATH
 
-# [Choice] Go version: 1, 1.16, 1.15
-ARG VARIANT="1.16"
-FROM mcr.microsoft.com/vscode/devcontainers/go:0-${VARIANT}
+USER root
+ENV DOCKER_BUILDKIT=1
+ENV GOPATH=$GOPATH
+ENV MAGEFILE_ENABLE_COLOR=1
+ENV TRUNK_LAUNCHER_QUIET=true
+ENV PATH="$GOPATH/bin:/home/$DEVCONTAINER_USER/.local/share/aquaproj-aqua/bin:/home/$DEVCONTAINER_USER/go/bin:$PATH"
+# ENV PATH="${GOPATH}/bin:${PATH}" --> this uses HOST path , use the $PATH variable instead
+USER $DEVCONTAINER_USER
+COPY files/.zshrc /home/$DEVCONTAINER_USER/.zshrc
+COPY files/first-run-notice.txt /home/$DEVCONTAINER_USER/first-run-notice.txt
 
-# [Option] Install Node.js
-ARG INSTALL_NODE="true"
-ARG NODE_VERSION="lts/*"
-RUN if [ "${INSTALL_NODE}" = "true" ]; then su vscode -c "umask 0002 && . /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"; fi
-RUN go install github.com/go-task/task/v3/cmd/task@latest \
-    && go install github.com/evilmartians/lefthook@master
-# [Optional] Uncomment this section to install additional OS packages.
-# RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-#     && apt-get -y install --no-install-recommends <your-package-list-here>
+RUN mkdir -p /home/$DEVCONTAINER_USER/.minikube \
+  && chown $DEVCONTAINER_USER /home/$DEVCONTAINER_USER/.minikube \
+  && /bin/bash -c 'set -euo pipefail && curl https://get.trunk.io -fsSL | bash -s -- -y' \
+  && /bin/bash -c 'set -euo pipefail && curl -sSfL https://raw.githubusercontent.com/aquaproj/aqua-installer/v1.0.0/aqua-installer | bash'
 
-# [Optional] Uncomment the next line to use go get to install anything else you need
-# RUN go get -x <your-dependency-or-tool>
 
-# [Optional] Uncomment this line to install global node packages.
-# RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g <your-package-here>" 2>&1
+VOLUME [ "/var/lib/docker" ]
+CMD ["sleep", "infinity"]
+# ENTRYPOINT ["/usr/local/share/docker-init.sh"]
