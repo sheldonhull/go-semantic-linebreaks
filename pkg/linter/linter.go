@@ -22,3 +22,5 @@ func FormatSemanticLineBreak(content []byte) (formatted string) {
 
 	return formatted
 }
+
+func ParseAndFix() err

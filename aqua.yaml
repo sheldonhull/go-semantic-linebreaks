@@ -1,0 +1,10 @@
+---
+# aqua - Declarative CLI Version Manager
+# https://aquaproj.github.io/
+registries:
+- type: standard
+  ref: v3.73.0 # renovate: depName=aquaproj/aqua-registry
+packages:
+- name: magefile/mage@v1.14.0
+- name: golang/go@go1.19.2
+- name: mvdan/gofumpt@v0.4.0

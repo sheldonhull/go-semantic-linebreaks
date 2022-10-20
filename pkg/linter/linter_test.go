@@ -78,6 +78,55 @@ func TestCountViolations(t *testing.T) {
 	}
 }
 
+
+func TestParseAndFix(t *testing.T) {
+	t.Parallel()
+
+	type testCase struct {
+		name     string
+		filepath string
+		want     int
+	}
+
+	testCases := []testCase{
+		{
+			name:     "1 violation counted",
+			filepath: "test-files/1-violations-multiple-lines.md",
+			want:     1,
+		},
+		{
+			name:     "2 violations counted",
+			filepath: "test-files/2-violations-multiple-lines.md",
+			want:     2,
+		},
+		{
+			name:     "11 violations counted",
+			filepath: "test-files/11-violations-one-line.md",
+			want:     11,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			is := is.New(t)
+			f, err := filepath.Abs(tc.filepath)
+			if err != nil {
+				t.Fatalf("cannot find test file: %q", tc.filepath)
+			}
+			content, err := ioutil.ReadFile(f)
+			if err != nil {
+				t.Fatalf("ioutil.ReadFile(f): %q", err)
+			}
+			got := proj.CountViolations(content)
+			want := tc.want
+			is.Equal(want, got) // violation count matches expected count
+		})
+	}
+}
+
+
 // func TestFixViolations(t *testing.T) {
 // 	t.Parallel()
 
