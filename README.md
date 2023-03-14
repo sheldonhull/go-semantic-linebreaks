@@ -14,7 +14,7 @@
 Go 1.16+
 
 ```shell
-go install https://github.com/sheldonhull/go-semantic-linebreaks/cmd/go-semantic-linebreaks@latest
+go install github.com/sheldonhull/go-semantic-linebreaks/cmd/go-semantic-linebreaks@latest
 ```
 
 ## Use
